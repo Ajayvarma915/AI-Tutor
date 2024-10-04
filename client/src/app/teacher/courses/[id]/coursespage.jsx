@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import PdfUpload from "@/app/components/fileUploder";
 
 const coursesData = {
   1: {
@@ -54,6 +55,10 @@ export default function CoursePage({ params }) {
       </div>
     );
   }
+  const handleUpload = async (pdfFile) => {
+    const formData = new FormData();
+    formData.append("pdffile", pdfFile);
+  };
 
   const handleAddTopic = (e) => {
     e.preventDefault();
@@ -86,7 +91,7 @@ export default function CoursePage({ params }) {
           <p className="text-gray-600">{course.description}</p>
           <p className="font-medium">{course.students} students enrolled</p>
           <div>
-            <h3 className="text-xl font-semibold mb-2">Topics:</h3>
+            <h3 className="text-xl font-semibold mb-2">Classes:</h3>
             {course.topics.length > 0 ? (
               <ul className="list-disc pl-5 space-y-1">
                 {course.topics.map((topic, index) => (
@@ -94,16 +99,16 @@ export default function CoursePage({ params }) {
                 ))}
               </ul>
             ) : (
-              <p className="text-gray-500">No topics added yet.</p>
+              <p className="text-gray-500">No Classes added yet.</p>
             )}
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="w-full sm:w-auto">Add New Topic</Button>
+              <Button className="w-full sm:w-auto">Add New Class</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle>Add New Topic</DialogTitle>
+                <DialogTitle>Add New Class</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleAddTopic} className="space-y-4">
                 <div className="space-y-2">
@@ -114,6 +119,7 @@ export default function CoursePage({ params }) {
                     onChange={(e) => setNewTopic(e.target.value)}
                     required
                   />
+                  <PdfUpload onUpload={handleUpload} />
                 </div>
                 <Button type="submit" className="w-full">
                   Add Topic

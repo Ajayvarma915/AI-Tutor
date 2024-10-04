@@ -4,7 +4,7 @@ import TeacherDashboard from "./teacherpage";
 
 const page = async () => {
   const session = await auth;
-  if (!session.user) redirect("/login");
+  if (!session) redirect("/login");
   else {
     return <TeacherDashboard />;
   }
