@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import axios from "axios";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +47,7 @@ export default function CoursePage({ params }) {
   const router = useRouter();
   const courseId = params.id;
   const [course, setCourse] = useState(coursesData[courseId]);
+  const [file, setFile] = useState(0);
   const [newTopic, setNewTopic] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -55,24 +58,49 @@ export default function CoursePage({ params }) {
       </div>
     );
   }
-  const handleUpload = async (pdfFile) => {
-    const formData = new FormData();
-    formData.append("pdffile", pdfFile);
-  };
+  // const handleUpload = async (pdfFile) => {
+  //   const formData = new FormData();
+  //   formData.append("pdffile", pdfFile);
+  //   try {
+  //     const responce = await axios.post(
+  //       `http://localhost:8000/api/v1/teacher/courses/${courseId}/addclassesdetails`,
+  //       formData,
+  //       {
+  //         headers: {
+  //           "Content-Type": "multipart/form-data",
+  //         },
+  //       }
+  //     );
+  //     console.log(responce.status);
+  //   } catch (err) {
+  //     console.log("error");
+  //   }
+  // };
 
-  const handleAddTopic = (e) => {
+  const handleAddTopic = async (e) => {
     e.preventDefault();
-    if (newTopic) {
-      const updatedCourse = {
-        ...course,
-        topics: [...course.topics, newTopic],
-      };
-      setCourse(updatedCourse);
-      setNewTopic("");
+    if (!newTopic) toast.error("Please enter a topic");
+    if (!file) toast.error("Please add the pdf");
+    const formData = new FormData();
+    formData.append("name", newTopic);
+    formData.append("pdffile", file);
+    try {
+      const responce = await axios.post(
+        `http://localhost:8000/api/v1/teacher/courses/${courseId}/addclassesdetails`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log(responce.status);
       setIsDialogOpen(false);
-      toast.success("Topic added successfully!");
-    } else {
-      toast.error("Please enter a topic");
+      setNewTopic("");
+      toast.success("Topic added successfully");
+    } catch (err) {
+      console.log("error");
+      toast.error("Error 404 sry brh...");
     }
   };
 
@@ -111,7 +139,7 @@ export default function CoursePage({ params }) {
                 <DialogTitle>Add New Class</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleAddTopic} className="space-y-4">
-                <div className="space-y-2">
+                <div className="space-y-2 flex flex-col">
                   <Label htmlFor="topicName">Topic Name</Label>
                   <Input
                     id="topicName"
@@ -119,7 +147,7 @@ export default function CoursePage({ params }) {
                     onChange={(e) => setNewTopic(e.target.value)}
                     required
                   />
-                  <PdfUpload onUpload={handleUpload} />
+                  <PdfUpload onUpload={(file) => setFile(file)} />
                 </div>
                 <Button type="submit" className="w-full">
                   Add Topic

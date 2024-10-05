@@ -1,12 +1,14 @@
-const fs = require("fs");
-const path = require("path");
 const prisma = require("../utils/db.config");
 
 exports.getAllCourses = async (req, res) => {
   try {
     const courses = await prisma.Courses.findMany({
       include: {
-        classes: true,
+        classes: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
     res.status(200).json({
@@ -46,10 +48,8 @@ exports.getCourse = async (req, res) => {
 };
 
 exports.addCourses = async (req, res) => {
-  // const filepath = path.join(__dirname, "../../../New_Resume_Sarath.pdf");
   try {
     const { name, description } = req.body;
-    // const pdffile = fs.readFileSync(filepath);
     const course = await prisma.Courses.create({
       data: {
         name,
@@ -69,18 +69,21 @@ exports.addCourses = async (req, res) => {
   }
 };
 
-exports.addCoursDetails = async (req, res) => {
+exports.addClassDetails = async (req, res) => {
   try {
-    const { name, pdff, coursid } = req.body;
-    const updatedCours = prisma.Courses.update({
+    const pdfBuffer = req.file.buffer;
+    const pdfname = req.file.originalname;
+    const courseId = parseInt(req.params.id, 10);
+    const updatedCours = await prisma.Courses.update({
       where: {
-        id: coursid,
+        id: courseId,
       },
       data: {
         classes: {
           create: {
-            name: name,
-            pdffile: pdff,
+            name: pdfname,
+            pdffile: pdfBuffer,
+            createdAt: new Date(),
           },
         },
       },
@@ -94,7 +97,7 @@ exports.addCoursDetails = async (req, res) => {
       data: updatedCours,
     });
   } catch (err) {
-    res.status(303).json({
+    res.status(400).json({
       status: "failed",
       message: err,
     });
