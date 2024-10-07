@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react'
-import { doCredentialsLogin } from '../actions/actions'
+// import { doCredentialsLogin } from '../actions/actions'
 import { useRouter } from 'next/navigation'
 import { doSocialLogin } from '../actions/actions'
 const CredentialsLogin = () => {
@@ -10,25 +10,25 @@ const CredentialsLogin = () => {
         event.preventDefault();
         console.log("Submit form prevented");
         
-        try{
-            setIsError(false);
-            const formData=new FormData(event.currentTarget);
-            console.log(formData);
+        // try{
+        //     setIsError(false);
+        //     const formData=new FormData(event.currentTarget);
+        //     console.log(formData);
             
-            const response=await doCredentialsLogin(formData);
-            console.log(response);
+        //     const response=await doCredentialsLogin(formData);
+        //     console.log(response);
             
-            if(!!response.error){
-                setIsError(response.error.message);
-            }
-            else{
-                setIsError("");
-                router.push('/home')
-            }
-        }
-        catch(error){
-            setIsError("Check your credentials");
-        }
+        //     if(!!response.error){
+        //         setIsError(response.error.message);
+        //     }
+        //     else{
+        //         setIsError("");
+        //         router.push('/home')
+        //     }
+        // }
+        // catch(error){
+        //     setIsError("Check your credentials");
+        // }
     }
   return (
     <>

@@ -50,7 +50,7 @@ export default function CoursePage({ params }) {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="container mx-auto px-4 py-8 max-w-10xl">
             <Button onClick={() => router.push('/teacher')} className="mb-6">Back to Dashboard</Button>
             <Card className="w-full">
                 <CardHeader>
@@ -95,7 +95,7 @@ export default function CoursePage({ params }) {
                     </Dialog>
                 </CardContent>
             </Card>
-            <ToastContainer position="bottom-right" />
+            <ToastContainer position="top-right" />
         </div>
     )
 }

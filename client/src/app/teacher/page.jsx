@@ -17,6 +17,7 @@ import {
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
+
 const initialCourses = [
     { id: 1, name: "Introduction to React", description: "Learn the basics of React", students: 50 },
     { id: 2, name: "Advanced JavaScript", description: "Deep dive into JavaScript concepts", students: 30 },
@@ -28,7 +29,7 @@ export default function TeacherDashboard() {
     const [newCourse, setNewCourse] = useState({ name: '', description: '' })
     const [searchTerm, setSearchTerm] = useState('')
     const [isDialogOpen, setIsDialogOpen] = useState(false)
-
+    
     const handleAddCourse = (e) => {
         e.preventDefault()
         if (newCourse.name && newCourse.description) {
@@ -47,12 +48,11 @@ export default function TeacherDashboard() {
     }
 
     const filteredCourses = courses.filter(course =>
-        course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.description.toLowerCase().includes(searchTerm.toLowerCase())
+        course.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="container mx-auto px-4 py-8 max-w-10xl">
             <h1 className="text-3xl font-bold mb-6 text-center sm:text-left">Teacher Dashboard</h1>
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-4 sm:space-y-0">
                 <h2 className="text-xl font-semibold">Your Courses</h2>
@@ -115,7 +115,7 @@ export default function TeacherDashboard() {
                     </Card>
                 ))}
             </div>
-            <ToastContainer position="bottom-right" />
+            <ToastContainer position="top-right" />
         </div>
     )
 }
