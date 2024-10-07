@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { redirect } from "next/dist/server/api-utils";
 
 export const {
