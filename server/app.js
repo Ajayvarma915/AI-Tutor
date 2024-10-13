@@ -1,5 +1,5 @@
 const express = require("express");
-const teacherRoutes = require("./Routers/teacherRouters");
+const courseRouters = require("./Routers/courseRouters");
 const authRouters = require("./Routers/authRouters");
 
 const morgan = require("morgan");
@@ -16,7 +16,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(morgan("dev"));
 
-app.use("/api/v1/teacher", teacherRoutes);
+app.use("/api/v1/courses", courseRouters);
 app.use("/api/v1/users", authRouters);
 
 module.exports = app;
