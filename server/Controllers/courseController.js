@@ -47,7 +47,7 @@ exports.getCourse = async (req, res) => {
   }
 };
 
-exports.addCourses = async (req, res) => {
+exports.createCourse = async (req, res) => {
   try {
     const { name, description } = req.body;
     const course = await prisma.Courses.create({

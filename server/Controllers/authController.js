@@ -1,5 +1,4 @@
 const prisma = require("../utils/db.config");
-const prima = require("../utils/db.config");
 const bcrypt = require("bcrypt");
 
 exports.Register = async (req, res) => {
@@ -50,13 +49,13 @@ exports.Register = async (req, res) => {
 
 exports.Login = async (req, res) => {
   try {
-    const { email, password, provider, } = req.body;
+    const { email, password, provider } = req.body;
     if (provider === "credentials" && (!email || !password))
       return res.status(400).json({
         status: "failed",
         message: "Please provide email and password",
       });
-    const user = await prima.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: {
         email: email,
       },
@@ -85,7 +84,7 @@ exports.Login = async (req, res) => {
         });
       }
       user.password = undefined;
-       return res.status(200).json({
+      return res.status(200).json({
         status: "success",
         data: {
           user,
