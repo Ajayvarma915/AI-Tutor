@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,26 +16,26 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const initialCourses = [
-  {
-    id: 1,
-    name: "Introduction to React",
-    description: "Learn the basics of React",
-    students: 50,
-  },
-  {
-    id: 2,
-    name: "Advanced JavaScript",
-    description: "Deep dive into JavaScript concepts",
-    students: 30,
-  },
-  {
-    id: 3,
-    name: "Web Design Fundamentals",
-    description: "Master the principles of web design",
-    students: 45,
-  },
-];
+// const initialCourses = [
+//   {
+//     id: 1,
+//     name: "Introduction to React",
+//     description: "Learn the basics of React",
+//     students: 50,
+//   },
+//   {
+//     id: 2,
+//     name: "Advanced JavaScript",
+//     description: "Deep dive into JavaScript concepts",
+//     students: 30,
+//   },
+//   {
+//     id: 3,
+//     name: "Web Design Fundamentals",
+//     description: "Master the principles of web design",
+//     students: 45,
+//   },
+// ];
 
 const TeacherDashboard = () => {
   const [courses, setCourses] = useState(initialCourses);
@@ -43,21 +43,50 @@ const TeacherDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleAddCourse = (e) => {
-    e.preventDefault();
-    if (newCourse.name && newCourse.description) {
-      const course = {
-        id: courses.length + 1,
-        ...newCourse,
-        students: 0,
-      };
-      setCourses([...courses, course]);
-      setNewCourse({ name: "", description: "" });
-      setIsDialogOpen(false);
-      toast.success("Course added successfully!");
-    } else {
-      toast.error("Please fill in all fields");
-    }
+  const getAllCourses=async()=>{
+      try {
+          const response = await fetch("http://localhost:8000/api/v1/courses");
+          if (response.ok) {
+              const data = await response.json();
+              setCourses(data);
+          } else {
+              console.error("Failed to fetch courses:", response.statusText);
+          }
+      } catch (error) {
+          console.error("Error fetching courses:", error);
+      }
+  }
+  const handleAddCourse =async (e) => {
+      e.preventDefault();
+      if (newCourse.name && newCourse.description) {
+          try {
+              const response = await fetch("http://localhost:8000/api/v1/courses", {
+                  method: "POST",
+                  headers: {
+                      "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                      name: newCourse.name,
+                      description: newCourse.description,
+                  }),
+              });
+
+              if (response.ok) {
+                  setNewCourse({ name: "", description: "" });
+                  setIsDialogOpen(false);
+                  toast.success("Course added successfully!");
+                  getAllCourses();
+              } else {
+                  toast.error("Failed to add course");
+                  console.error("Failed to add course:", response.statusText);
+              }
+          } catch (error) {
+              console.error("Error adding course:", error);
+              toast.error("Error adding course");
+          }
+      } else {
+          toast.error("Please fill in all fields");
+      }
   };
 
   const filteredCourses = courses.filter(
@@ -65,6 +94,10 @@ const TeacherDashboard = () => {
       course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       course.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  useEffect(()=>{
+    getAllCourses();
+  },[courses]);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -144,7 +177,7 @@ const TeacherDashboard = () => {
           </Card>
         ))}
       </div>
-      <ToastContainer position="bottom-right" />
+      <ToastContainer position="top-right" />
     </div>
   );
 };

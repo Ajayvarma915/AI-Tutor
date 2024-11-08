@@ -46,7 +46,6 @@ const Login = () => {
         const formData = new FormData();
         formData.append('action', provider);
         formData.append('userType', isStudent ? 'student' : 'teacher');
-
         const result = await doSocialLogin(formData);
     }
 

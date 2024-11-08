@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,29 +19,29 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PdfUpload from "@/app/components/fileUploder";
 
-const coursesData = {
-  1: {
-    id: 1,
-    name: "Introduction to React",
-    description: "Learn the basics of React",
-    students: 50,
-    topics: [],
-  },
-  2: {
-    id: 2,
-    name: "Advanced JavaScript",
-    description: "Deep dive into JavaScript concepts",
-    students: 30,
-    topics: [],
-  },
-  3: {
-    id: 3,
-    name: "Web Design Fundamentals",
-    description: "Master the principles of web design",
-    students: 45,
-    topics: [],
-  },
-};
+// const coursesData = {
+//   1: {
+//     id: 1,
+//     name: "Introduction to React",
+//     description: "Learn the basics of React",
+//     students: 50,
+//     topics: [],
+//   },
+//   2: {
+//     id: 2,
+//     name: "Advanced JavaScript",
+//     description: "Deep dive into JavaScript concepts",
+//     students: 30,
+//     topics: [],
+//   },
+//   3: {
+//     id: 3,
+//     name: "Web Design Fundamentals",
+//     description: "Master the principles of web design",
+//     students: 45,
+//     topics: [],
+//   },
+// };
 
 export default function CoursePage({ params }) {
   const router = useRouter();
@@ -76,7 +76,18 @@ export default function CoursePage({ params }) {
   //     console.log("error");
   //   }
   // };
-
+    const getCourseName=async()=>{
+        try {
+            const response = await fetch(`GET http://localhost:8000/api/v1/courses/${params.id}`)
+            if(response.ok){
+                const data = await response.json();
+                setCourse(data);
+            }
+            else toast.error("Failed to fetch Course Data");
+        } catch (error) {
+            toast.error("Error Getting Course Name");
+        }
+    }
   const handleAddTopic = async (e) => {
     e.preventDefault();
     if (!newTopic) toast.error("Please enter a topic");
@@ -85,24 +96,24 @@ export default function CoursePage({ params }) {
     formData.append("name", newTopic);
     formData.append("pdffile", file);
     try {
-      const responce = await axios.post(
-        `http://localhost:8000/api/v1/teacher/courses/${courseId}/addclassesdetails`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+        const response = await fetch(`http://localhost:8000/api/v1/courses/2`, {
+            method: "POST",
+            body: formData,
+        });
       console.log(responce.status);
       setIsDialogOpen(false);
       setNewTopic("");
+      setFile(null);
       toast.success("Topic added successfully");
     } catch (err) {
       console.log("error");
-      toast.error("Error 404 sry brh...");
+      toast.error("Error 404");
     }
   };
+
+  useEffect(()=>{
+    getCourseName();
+  },[]);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -157,7 +168,7 @@ export default function CoursePage({ params }) {
           </Dialog>
         </CardContent>
       </Card>
-      <ToastContainer position="bottom-right" />
+      <ToastContainer position="top-right" />
     </div>
   );
 }

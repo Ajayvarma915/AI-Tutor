@@ -4,8 +4,9 @@ import React from "react";
 import { Studentpage } from "./studentpage";
 
 const page = async () => {
-  const session = await auth;
-  if (!session) redirect("/login");
+  const session = await auth();
+  console.log(session)
+  if (!session?.user) redirect("/login");
   else {
     return <Studentpage />;
   }
