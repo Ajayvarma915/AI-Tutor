@@ -100,7 +100,7 @@ export default function CoursePage({ params }) {
             method: "POST",
             body: formData,
         });
-      console.log(responce.status);
+      console.log(response.status);
       setIsDialogOpen(false);
       setNewTopic("");
       setFile(null);
