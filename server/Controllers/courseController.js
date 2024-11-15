@@ -31,6 +31,13 @@ exports.getCourse = async (req, res) => {
       where: {
         id: courseId,
       },
+      include: {
+        classes: {
+          select: {
+            name: true,
+          },
+        },
+      },
     });
 
     res.status(200).json({
