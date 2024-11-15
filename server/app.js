@@ -18,5 +18,6 @@ app.use(morgan("dev"));
 
 app.use("/api/v1/courses", courseRouters);
 app.use("/api/v1/users", authRouters);
+app.use("/api/v1/generate-qa",)
 
 module.exports = app;

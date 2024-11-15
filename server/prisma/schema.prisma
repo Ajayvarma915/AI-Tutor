@@ -23,7 +23,7 @@ model User {
   image    String?
   role     Role 
   createdAt DateTime @default(now())
-
+  quizSessions QuizSession[]
   @@map("users")
 }
 
@@ -34,6 +34,7 @@ model Classes {
   createdAt DateTime @default(now())
   Courses   Courses? @relation(fields: [coursesId], references: [id])
   coursesId Int?
+  quizSessions QuizSession[]
 }
 
 model Courses {
@@ -43,7 +44,50 @@ model Courses {
   classes     Classes[]
 }
 
+model QuizSession{
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  classesId   Int
+  status      QuizStatus @default(IN_PROGRESS)
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+
+  user        User      @relation(fields:[userId],references:[id])
+  classes     Classes   @relation(fields:[classesId],references:[id])
+
+  score       Int?
+  responses   Response[]
+  questions   GeneratedQuestion[]
+}
+
+model GeneratedQuestion{
+  id          Int        @id @default(autoincrement())
+  quizSessionId Int
+  question      String
+  options       String[]
+  correctAnswer String?
+
+  quizSession QuizSession  @relation(fields:[quizSessionId],references:[id])
+}
+
+model Response{
+  id          Int       @id @default(autoincrement())
+  quizSessionId Int
+  questionId Int
+  answer      String?
+  isAnswered  Boolean @default(false)
+  isCorrect   Boolean
+
+  quizSession  QuizSession @relation(fields:[quizSessionId],references:[id])
+}
+
 enum Role{
   teacher
   student
+}
+
+enum QuizStatus{
+  IN_PROGRESS
+  COMPLETED
+  NOT_STARTED
 }
