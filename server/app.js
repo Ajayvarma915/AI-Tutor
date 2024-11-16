@@ -1,6 +1,7 @@
 const express = require("express");
 const courseRouters = require("./Routers/courseRouters");
 const authRouters = require("./Routers/authRouters");
+const quizRouters = require("./Routers/quizRouters");
 
 const morgan = require("morgan");
 const cors = require("cors");
@@ -18,6 +19,6 @@ app.use(morgan("dev"));
 
 app.use("/api/v1/courses", courseRouters);
 app.use("/api/v1/users", authRouters);
-app.use("/api/v1/generate-qa",)
+app.use("/api/v1/quiz", quizRouters);
 
 module.exports = app;
