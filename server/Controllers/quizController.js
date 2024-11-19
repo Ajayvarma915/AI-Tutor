@@ -8,24 +8,28 @@ exports.StartQuizSession = async (req, res) => {
 
     const sendPdf = async () => {
       try {
-        const classPdf = await prisma.classes.findFirst({
+        const classPdf = await prisma.courses.findUnique({
           where: {
-            AND: [
-              {
-                id: classesId,
-              },
-              {
-                coursesId,
-              },
-            ],
+            id: coursesId,
           },
           select: {
-            pdffile: true,
-            name: true,
+            classes: {
+              where: {
+                id: classesId,
+              },
+              select: {
+                pdffile: true,
+                name: true,
+              },
+            },
           },
         });
         const formData = new FormData();
-        formData.append("file", Buffer.from(classPdf.pdffile), "classes1.pdf");
+        formData.append(
+          "file",
+          Buffer.from(classPdf.classes[0].pdffile),
+          classPdf.classes[0].name
+        );
         const response = await axios.post(
           "http://localhost:9000/pdf_generate-qa/",
           formData,
