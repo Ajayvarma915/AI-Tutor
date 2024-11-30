@@ -46,7 +46,7 @@ import PdfUpload from "@/app/components/fileUploder";
 export default function CoursePage({ params }) {
   const router = useRouter();
   const courseId = params.id;
-  const [course, setCourse] = useState(coursesData[courseId]);
+  const [course, setCourse] = useState([]);
   const [file, setFile] = useState(0);
   const [newTopic, setNewTopic] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -78,16 +78,20 @@ export default function CoursePage({ params }) {
   // };
     const getCourseName=async()=>{
         try {
-            const response = await fetch(`GET http://localhost:8000/api/v1/courses/${params.id}`)
+            const response = await fetch(`http://localhost:8000/api/v1/courses/${params.id}`)
+            // console.log(response)
             if(response.ok){
                 const data = await response.json();
-                setCourse(data);
+                if(data){
+                    setCourse(data.data.course);
+                }
             }
             else toast.error("Failed to fetch Course Data");
         } catch (error) {
             toast.error("Error Getting Course Name");
         }
     }
+
   const handleAddTopic = async (e) => {
     e.preventDefault();
     if (!newTopic) toast.error("Please enter a topic");
@@ -96,7 +100,7 @@ export default function CoursePage({ params }) {
     formData.append("name", newTopic);
     formData.append("pdffile", file);
     try {
-        const response = await fetch(`http://localhost:8000/api/v1/courses/2`, {
+        const response = await fetch(`http://localhost:8000/api/v1/courses/${courseId}`, {
             method: "POST",
             body: formData,
         });
@@ -116,6 +120,7 @@ export default function CoursePage({ params }) {
   },[]);
 
   return (
+    <>
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <Button onClick={() => router.push("/teacher")} className="mb-6">
         Back to Dashboard
@@ -131,10 +136,10 @@ export default function CoursePage({ params }) {
           <p className="font-medium">{course.students} students enrolled</p>
           <div>
             <h3 className="text-xl font-semibold mb-2">Classes:</h3>
-            {course.topics.length > 0 ? (
+            {course.classes &&  course.classes.length > 0 ? (
               <ul className="list-disc pl-5 space-y-1">
-                {course.topics.map((topic, index) => (
-                  <li key={index}>{topic}</li>
+                {course.classes.map((eachClass, index) => (
+                  <li key={index}>{eachClass.name}</li>
                 ))}
               </ul>
             ) : (
@@ -170,5 +175,6 @@ export default function CoursePage({ params }) {
       </Card>
       <ToastContainer position="top-right" />
     </div>
+    </>
   );
 }

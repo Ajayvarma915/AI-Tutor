@@ -1,3 +1,4 @@
+'use client'
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,9 @@ export const Studentpage = () => {
             const response = await fetch("http://localhost:8000/api/v1/courses");
             if (response.ok) {
                 const data = await response.json();
-                setCourses(data);
+                if(data){
+                    setCourses(data.data);
+                }
             } else {
                 console.error("Failed to fetch courses:", response.statusText);
             }
@@ -19,6 +22,7 @@ export const Studentpage = () => {
         }
     };
 
+    console.log(courses)
     useEffect(() => {
         fetchAllCourses();
     }, []);
