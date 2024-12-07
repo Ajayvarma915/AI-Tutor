@@ -22,7 +22,7 @@ export const Studentpage = () => {
         }
     };
 
-    console.log(courses)
+    // console.log(courses)
     useEffect(() => {
         fetchAllCourses();
     }, []);
@@ -44,7 +44,7 @@ export const Studentpage = () => {
                                 {course.students} students enrolled
                             </p>
                             <Button variant="outline" className="w-full">
-                                Enroll
+                                View Course
                             </Button>
                         </CardContent>
                     </Card>

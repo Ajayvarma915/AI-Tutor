@@ -17,6 +17,8 @@ export default function CoursePage({ params }) {
     const [selectedClass, setSelectedClass] = useState(null);
     const [file, setFile] = useState(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+    const [newClassName, setNewClassName] = useState("");
 
     const getCourseName = async () => {
         try {
@@ -58,6 +60,39 @@ export default function CoursePage({ params }) {
             }
         } catch (error) {
             toast.error("Error updating PDF.");
+        }
+    };
+
+    const handleAddClass = async (e) => {
+        e.preventDefault();
+        if (!newClassName || !file) {
+            return toast.error("Please provide a class name and upload a PDF.");
+        }
+
+        const formData = new FormData();
+        formData.append("pdffile", file);
+        formData.append("name", newClassName);
+
+        try {
+            const response = await fetch(
+                `http://localhost:8000/api/v1/courses/${courseId}`,
+                {
+                    method: "PATCH",
+                    body: formData,
+                }
+            );
+            console.log(response)
+            if (response.ok) {
+                toast.success("Class added successfully.");
+                setIsAddDialogOpen(false);
+                setFile(null);
+                setNewClassName("");
+                getCourseName(); // Refresh data
+            } else {
+                toast.error("Failed to add class.");
+            }
+        } catch (error) {
+            toast.error("Error adding class.");
         }
     };
 
@@ -125,6 +160,9 @@ export default function CoursePage({ params }) {
                             <p className="text-gray-500">No Classes added yet.</p>
                         )}
                     </div>
+                    <Button onClick={() => setIsAddDialogOpen(true)} className="mt-4">
+                        Add New Class
+                    </Button>
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <motion.div
                             initial={{ scale: 0.8, opacity: 0 }}
@@ -139,6 +177,32 @@ export default function CoursePage({ params }) {
                                     <PdfUpload onUpload={(file) => setFile(file)} />
                                     <Button type="submit" className="w-full">
                                         Update PDF
+                                    </Button>
+                                </form>
+                            </DialogContent>
+                        </motion.div>
+                    </Dialog>
+                    <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            <DialogContent className="sm:max-w-[425px]">
+                                <DialogHeader>
+                                    <DialogTitle>Add New Class</DialogTitle>
+                                </DialogHeader>
+                                <form onSubmit={handleAddClass} className="space-y-4">
+                                    <input
+                                        type="text"
+                                        placeholder="Class Name"
+                                        value={newClassName}
+                                        onChange={(e) => setNewClassName(e.target.value)}
+                                        className="w-full p-2 border rounded"
+                                    />
+                                    <PdfUpload onUpload={(file) => setFile(file)} />
+                                    <Button type="submit" className="w-full">
+                                        Add Class
                                     </Button>
                                 </form>
                             </DialogContent>

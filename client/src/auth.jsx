@@ -21,6 +21,14 @@ export const {
           provider: account?.provider,
         };
         console.log(payload);
+        const response = await fetch("http://localhost:8000/api/v1/courses",{
+            method:"POST",
+            headers:{
+                'Content-Type':'application/json',
+            },
+            body:JSON.stringify(payload)
+        }
+    );
       } catch (err) {
         if (err instanceof AxiosError) {
           return redirect(`/auth/error?message=${err.message}`);
