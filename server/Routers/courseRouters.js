@@ -14,6 +14,9 @@ router
   .get(courseControllers.getCourse)
   .patch(upload.single("pdffile"), courseControllers.addClassDetails);
 
-
+router
+  .route("/:id/:id")
+  .get(courseControllers.getClasses)
+  .patch(upload.single("pdffile"));
 
 module.exports = router;

@@ -34,6 +34,7 @@ exports.getCourse = async (req, res) => {
       include: {
         classes: {
           select: {
+            id: true,
             name: true,
           },
         },
@@ -107,6 +108,31 @@ exports.addClassDetails = async (req, res) => {
     res.status(400).json({
       status: "failed",
       message: err,
+    });
+  }
+};
+
+exports.getClasses = async (req, res) => {
+  try {
+    const classId = parseInt(req.params.id, 10);
+    const newClass = await prisma.classes.findUnique({
+      where: {
+        id: classId,
+      },
+      select:{
+        name:true
+      }
+    });
+    res.status(200).json({
+      status: "success",
+      data: {
+        newClass,
+      },
+    });
+  } catch (e) {
+    res.status(400).json({
+      status: "failed",
+      message: e.message,
     });
   }
 };
