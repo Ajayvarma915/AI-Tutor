@@ -72,7 +72,6 @@ exports.StartQuizSession = async (req, res) => {
           (item) =>({...item,quizSessionId})
         );
 
-        console.log(finalQuestions);
 
         await prisma.generatedQuestion.createMany({
           data: finalQuestions,
