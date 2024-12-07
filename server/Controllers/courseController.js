@@ -6,6 +6,7 @@ exports.getAllCourses = async (req, res) => {
       include: {
         classes: {
           select: {
+            id: true,
             name: true,
           },
         },
@@ -80,7 +81,7 @@ exports.createCourse = async (req, res) => {
 exports.addClassDetails = async (req, res) => {
   try {
     const pdfBuffer = req.file.buffer;
-    const pdfname = req.file.originalname;
+    const pdfname = req.body.name;
     const courseId = parseInt(req.params.id, 10);
     const updatedCours = await prisma.Courses.update({
       where: {
@@ -119,9 +120,9 @@ exports.getClasses = async (req, res) => {
       where: {
         id: classId,
       },
-      select:{
-        name:true
-      }
+      select: {
+        name: true,
+      },
     });
     res.status(200).json({
       status: "success",
@@ -133,6 +134,34 @@ exports.getClasses = async (req, res) => {
     res.status(400).json({
       status: "failed",
       message: e.message,
+    });
+  }
+};
+
+exports.updateClassPdf = async (req, res) => {
+  try {
+    const pdfBuffer = req.file.buffer;
+    const pdfname = req.body.name;
+    const classId = parseInt(req.params.id, 10);
+    const updatedCours = await prisma.classes.update({
+      where: {
+        id: classId,
+      },
+      data: {
+        name: pdfname,
+        pdffile: pdfBuffer,
+        createdAt: new Date(),
+      },
+    });
+
+    res.status(200).json({
+      status: "success",
+      data: updatedCours,
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: "failed",
+      message: err,
     });
   }
 };
