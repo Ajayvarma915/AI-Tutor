@@ -54,7 +54,7 @@ export default function CoursePage({ params }) {
                 toast.success("PDF updated successfully.");
                 setIsDialogOpen(false);
                 setFile(null);
-                getCourseName(); // Refresh data
+                getCourseName();
             } else {
                 toast.error("Failed to update PDF.");
             }

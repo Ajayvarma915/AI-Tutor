@@ -2,16 +2,18 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export const Studentpage = () => {
     const [courses, setCourses] = useState([]);
+    const router = useRouter();
 
     const fetchAllCourses = async () => {
         try {
             const response = await fetch("http://localhost:8000/api/v1/courses");
             if (response.ok) {
                 const data = await response.json();
-                if(data){
+                if (data) {
                     setCourses(data.data);
                 }
             } else {
@@ -43,7 +45,7 @@ export const Studentpage = () => {
                             <p className="mb-4 text-sm font-medium">
                                 {course.students} students enrolled
                             </p>
-                            <Button variant="outline" className="w-full">
+                            <Button variant="outline" className="w-full" onClick={() => router.push(`/student/courses/${course.id}`)}>
                                 View Course
                             </Button>
                         </CardContent>
@@ -53,3 +55,4 @@ export const Studentpage = () => {
         </div>
     );
 };
+
