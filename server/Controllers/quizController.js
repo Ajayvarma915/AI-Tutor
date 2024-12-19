@@ -55,10 +55,10 @@ exports.StartQuizSession = async (req, res) => {
 
         const createQuizSession = async () => {
             try {
-                return await prisma.quizSession.create({
+                return await prisma.QuizSession.create({
                     data: {
-                        userId,
-                        classesId,
+                        userId:userId,
+                        classesId:classesId
                     },
                 });
             } catch (e) {
