@@ -11,11 +11,22 @@ const QuizPage = ({ params }) => {
     const [timeLeft, setTimeLeft] = useState(600); 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-
+    
     useEffect(() => {
         const fetchQuiz = async () => {
             try {
-                const response = await fetch(`http://localhost:8000/api/v1/quiz/generate-qa`);
+                const response = await fetch(`http://localhost:8000/api/v1/quiz/generate-qa`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        "classesId": 10,
+                        "userId": 2,
+                        "coursesId": 2,
+                    }),
+                });
+
                 const data = await response.json();
                 if (data.status === 'success') {
                     setQuizData(data.data.generatedQuestions);
@@ -30,7 +41,7 @@ const QuizPage = ({ params }) => {
         fetchQuiz();
     }, []);
 
-
+    
     useEffect(() => {
         if (timeLeft <= 0) {
             handleSubmit(); 
@@ -57,21 +68,28 @@ const QuizPage = ({ params }) => {
         setIsSubmitting(true);
 
         try {
+            const payload = {
+                userId: 2, 
+                classId: 10,
+                quizId: id,
+                answers: Object.keys(answers).map((questionIndex) => ({
+                    questionId: quizData[questionIndex].quizSessionId,
+                    selectedAnswer: answers[questionIndex],
+                })),
+            };
+
             const response = await fetch(`http://localhost:8000/api/v1/quiz/submit`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    answers,
-                    quizId: id,
-                }),
+                body: JSON.stringify(payload),
             });
 
             const result = await response.json();
             if (result.status === 'success') {
                 alert('Quiz submitted successfully!');
-                router.push(`/student/courses/${id}`); // Navigate back to course page
+                router.push(`/student/courses/${id}`); 
             } else {
                 console.error('Quiz submission failed:', result.message);
             }
