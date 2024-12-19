@@ -111,43 +111,43 @@ exports.answerSubmission = async (req, res) => {
     try {
         const { quizSessionId, classId, userId, response } = req.body;
 
-        const resultsOfQuiz = async (quizId, res) => {
-            try {
-                const ansOfQns = await prisma.generatedQuestion.findMany({
-                    where: {
-                        quizSessionId: quizId,
-                    },
-                    select: {
-                        id: true,
-                        correctAnswer: true,
-                    },
-                });
-                let count = 0;
-                let newRes = res;
-                for (let i = 0; i < 10; i++) {
-                    if (ansOfQns[i].id === res[i].questionId) {
-                        if (ansOfQns[i].correctAnswer === res[i].answer) {
-                            count += 1;
-                            newRes[i].isAnswered = true;
-                            newRes[i].isCorrect = true;
-                        } else {
-                            newRes[i].isAnswered = true;
-                            newRes[i].isCorrect = false;
-                        }
-                    }
-                }
+    const resultsOfQuiz = async (quizId, res) => {
+      try {
+        const ansOfQns = await prisma.generatedQuestion.findMany({
+          where: {
+            quizSessionId: quizId,
+          },
+          select: {
+            id: true,
+            correctAnswer: true,
+          },
+        });
+        let count = 0;
+        let newRes = res;
+        for (let i = 0; i < 10; i++) {
+          if (ansOfQns[i].id === res[i].questionId) {
+            if (ansOfQns[i].correctAnswer === res[i].answer) {
+              count += 1;
+              newRes[i].isAnswered = true;
+              newRes[i].isCorrect = true;
+            } else {
+              newRes[i].isAnswered = true;
+              newRes[i].isCorrect = false;
+            }
+          }
+        }
+        
 
-
-                await prisma.quizSession.update({
-                    where: {
-                        id: quizId
-                    },
-                    data: {
-                        status: "COMPLETED",
-                        completedAt: new Date(),
-                        score: count
-                    }
-                })
+        await prisma.quizSession.update({
+          where:{
+            id:quizId
+          },
+          data:{
+            status:"COMPLETED",
+            completedAt: new Date(),
+            score:count
+          }
+        })
 
                 await prisma.response.createMany({
                     data: newRes,
