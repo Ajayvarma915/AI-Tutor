@@ -136,18 +136,17 @@ exports.answerSubmission = async (req, res) => {
             }
           }
         }
-        
 
         await prisma.quizSession.update({
-          where:{
-            id:quizId
+          where: {
+            id: quizId,
           },
-          data:{
-            status:"COMPLETED",
+          data: {
+            status: "COMPLETED",
             completedAt: new Date(),
-            score:count
-          }
-        })
+            score: count,
+          },
+        });
 
         await prisma.response.createMany({
           data: newRes,
