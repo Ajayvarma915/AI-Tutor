@@ -16,7 +16,7 @@ const QuizPage = ({ params }) => {
         const fetchQuiz = async () => {
             try {
                 const response = await fetch(`http://localhost:8000/api/v1/quiz/generate-qa`, {
-                    method: 'POST',
+                    method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -28,6 +28,7 @@ const QuizPage = ({ params }) => {
                 });
 
                 const data = await response.json();
+                console.log("quiz data",data);
                 if (data.status === 'success') {
                     setQuizData(data.data.generatedQuestions);
                 } else {
@@ -41,7 +42,7 @@ const QuizPage = ({ params }) => {
         fetchQuiz();
     }, []);
 
-    
+    console.log(quizData);
     useEffect(() => {
         if (timeLeft <= 0) {
             handleSubmit(); 
