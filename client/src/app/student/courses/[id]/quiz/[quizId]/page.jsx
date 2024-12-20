@@ -1,51 +1,60 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const QuizPage = ({ params }) => {
     const router = useRouter();
     const { id } = params;
     const [quizData, setQuizData] = useState(null);
     const [answers, setAnswers] = useState({});
-    const [timeLeft, setTimeLeft] = useState(600); 
+    const [timeLeft, setTimeLeft] = useState(600);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const isQuizFetched = useRef(false);
 
-    
     useEffect(() => {
         const fetchQuiz = async () => {
+            if (isQuizFetched.current) return;
+            isQuizFetched.current = true;
+
             try {
                 const response = await fetch(`http://localhost:8000/api/v1/quiz/generate-qa`, {
-                    method: 'GET',
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        "classesId": 10,
-                        "userId": 2,
-                        "coursesId": 2,
+                        classesId: 10,
+                        userId: 2,
+                        coursesId: 2,
                     }),
                 });
 
                 const data = await response.json();
-                console.log("quiz data",data);
                 if (data.status === 'success') {
                     setQuizData(data.data.generatedQuestions);
                 } else {
-                    console.error('Failed to fetch quiz data:', data.message);
+                    toast.error('Failed to load quiz data.');
                 }
             } catch (error) {
                 console.error('Error fetching quiz:', error);
+                toast.error('Error fetching quiz. Please try again.');
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchQuiz();
     }, []);
 
-    console.log(quizData);
     useEffect(() => {
+        if (!quizData || loading) return;
+
         if (timeLeft <= 0) {
-            handleSubmit(); 
+            handleSubmit();
             return;
         }
 
@@ -54,9 +63,8 @@ const QuizPage = ({ params }) => {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [timeLeft]);
+    }, [quizData, loading, timeLeft]);
 
-    
     const handleAnswerChange = (questionIndex, option) => {
         setAnswers((prev) => ({
             ...prev,
@@ -64,45 +72,61 @@ const QuizPage = ({ params }) => {
         }));
     };
 
-    
     const handleSubmit = async () => {
+        if (Object.keys(answers).length !== quizData.length) {
+            toast.error('Please answer all questions before submitting.');
+            return;
+        }
+
         setIsSubmitting(true);
 
         try {
-            const payload = {
-                userId: 2, 
-                classId: 10,
-                quizId: id,
-                answers: Object.keys(answers).map((questionIndex) => ({
-                    questionId: quizData[questionIndex].quizSessionId,
-                    selectedAnswer: answers[questionIndex],
+            const quizSessionId = quizData[0]?.quizSessionId;
+            const responsePayload = {
+                quizSessionId,
+                userId: 2,
+                classesId: 10,
+                response: quizData.map((question, index) => ({
+                    questionId: question.questionId,
+                    quizSessionId,
+                    answer: answers[index] || "",
                 })),
             };
 
-            const response = await fetch(`http://localhost:8000/api/v1/quiz/submit`, {
+            const response = await fetch(`http://localhost:8000/api/v1/quiz/ans-submission`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(payload),
+                body: JSON.stringify(responsePayload),
             });
 
             const result = await response.json();
             if (result.status === 'success') {
-                alert('Quiz submitted successfully!');
-                router.push(`/student/courses/${id}`); 
+                toast.success(`Quiz submitted successfully! Your score is ${result.data.score}.`);
+                router.push(`/student/courses/${id}`);
             } else {
-                console.error('Quiz submission failed:', result.message);
+                toast.error('Quiz submission failed. Please try again.');
             }
         } catch (error) {
             console.error('Error submitting quiz:', error);
+            toast.error('Error submitting quiz. Please try again.');
         }
 
         setIsSubmitting(false);
     };
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <div className="text-2xl font-semibold">Loading quiz...</div>
+            </div>
+        );
+    }
+
     return (
         <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
+            <ToastContainer />
             <h1 className="text-3xl font-semibold text-center mb-6">Quiz</h1>
             <div className="text-right text-xl font-medium mb-4">
                 Time Left: {Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? '0' : ''}{timeLeft % 60}
@@ -133,7 +157,7 @@ const QuizPage = ({ params }) => {
                     ))}
                 </div>
             ) : (
-                <p>Loading quiz...</p>
+                <p>No quiz data available.</p>
             )}
 
             <button
