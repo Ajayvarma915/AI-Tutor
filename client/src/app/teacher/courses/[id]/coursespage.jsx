@@ -137,9 +137,6 @@ export default function CoursePage({ params }) {
                                     <motion.li
                                         key={index}
                                         className="flex items-center space-x-4"
-                                        initial={{ scale: 0.9 }}
-                                        animate={{ scale: 1 }}
-                                        whileHover={{ scale: 1.05 }}
                                     >
                                         <p>{eachClass.name}</p>
                                         <Button variant="outline" onClick={() => handleViewPDF(eachClass.name)}>

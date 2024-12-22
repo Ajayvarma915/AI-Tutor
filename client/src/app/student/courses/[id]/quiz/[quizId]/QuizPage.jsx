@@ -4,27 +4,24 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Button } from "@/components/ui/button"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 const QuizPage = ({ params }) => {
     const router = useRouter();
     const { id } = params;
     const [quizData, setQuizData] = useState(null);
     const [answers, setAnswers] = useState({});
-    const [timeLeft, setTimeLeft] = useState(600);
+    const [timeLeft, setTimeLeft] = useState(10);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [showDialog, setShowDialog] = useState(false);
+    const [score, setScore] = useState(null);
     const isQuizFetched = useRef(false);
 
     useEffect(() => {
@@ -85,13 +82,8 @@ const QuizPage = ({ params }) => {
     };
 
     const handleSubmit = async () => {
-        // if (Object.keys(answers).length !== quizData.length) {
-        //     toast.error('Please answer all questions before submitting.');
-        //     return;
-        // }
-
         setIsSubmitting(true);
-        // console.log("QuizData: ",quizData);
+
         try {
             const quizSessionId = quizData[0]?.quizSessionId;
             const responsePayload = {
@@ -104,7 +96,7 @@ const QuizPage = ({ params }) => {
                     answer: answers[index] || "",
                 })),
             };
-            // console.log(responsePayload)
+
             const response = await fetch(`http://localhost:8000/api/v1/quiz/ans-submission`, {
                 method: 'POST',
                 headers: {
@@ -114,10 +106,9 @@ const QuizPage = ({ params }) => {
             });
 
             const result = await response.json();
-            console.log(result)
             if (result.status === 'success') {
-                toast.success(`Quiz submitted successfully! Your score is ${result.data.score}.`);
-                router.push(`/student/courses/${id}`);
+                setScore(result.data.score);
+                setShowDialog(true); 
             } else {
                 toast.error('Quiz submission failed. Please try again.');
             }
@@ -127,6 +118,37 @@ const QuizPage = ({ params }) => {
         }
 
         setIsSubmitting(false);
+    };
+
+    const getDialogContent = () => {
+        if (score === null) {
+            return "Thank you for participating in the quiz!";
+        }
+
+        if (score >= 80) {
+            return (
+                <>
+                    <h2 className="text-2xl font-bold text-green-600">🎉 Congratulations! 🎉</h2>
+                    <p className="mt-2 text-lg">You scored {score}! Excellent performance. Keep it up!</p>
+                </>
+            );
+        }
+
+        if (score >= 50) {
+            return (
+                <>
+                    <h2 className="text-2xl font-bold text-yellow-600">Good Effort! 👍</h2>
+                    <p className="mt-2 text-lg">You scored {score}. Practice more to achieve even better results!</p>
+                </>
+            );
+        }
+
+        return (
+            <>
+                <h2 className="text-2xl font-bold text-red-600">🙁 Try Again!</h2>
+                <p className="mt-2 text-lg">You scored {score}. Don’t give up! You can do better next time!</p>
+            </>
+        );
     };
 
     if (loading) {
@@ -141,7 +163,11 @@ const QuizPage = ({ params }) => {
         <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
             <ToastContainer />
             <h1 className="text-3xl font-semibold text-center mb-6">Quiz</h1>
-            <div className="text-right text-xl font-medium mb-4">
+
+            <div
+                className={`fixed top-4 right-4 px-4 py-2 rounded-full text-xl font-bold text-white ${timeLeft < 30 ? 'bg-red-500 animate-pulse' : 'bg-blue-500'
+                    }`}
+            >
                 Time Left: {Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? '0' : ''}{timeLeft % 60}
             </div>
 
@@ -180,6 +206,23 @@ const QuizPage = ({ params }) => {
             >
                 {isSubmitting ? 'Submitting...' : 'Submit Quiz'}
             </button>
+
+            <Dialog open={showDialog} onOpenChange={() => setShowDialog(false)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Quiz Results</DialogTitle>
+                    </DialogHeader>
+                    <div className="text-center">{getDialogContent()}</div>
+                    <DialogFooter>
+                        <button
+                            className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
+                            onClick={() => router.push(`/student/courses/${id}`)}
+                        >
+                            Go to Courses
+                        </button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

@@ -1,20 +1,22 @@
-'use client';
+"use client";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input"; 
+import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 
 export const Studentpage = () => {
     const [courses, setCourses] = useState([]);
     const [filteredCourses, setFilteredCourses] = useState([]);
     const [testResults, setTestResults] = useState([]);
-    const [view, setView] = useState("courses"); 
+    const [view, setView] = useState("courses");
     const [searchQuery, setSearchQuery] = useState("");
+    const [loading, setLoading] = useState(false); // Loading state
     const router = useRouter();
 
     const fetchAllCourses = async () => {
         try {
+            setLoading(true); // Start loading
             const response = await fetch("http://localhost:8000/api/v1/courses");
             if (response.ok) {
                 const data = await response.json();
@@ -27,6 +29,8 @@ export const Studentpage = () => {
             }
         } catch (error) {
             console.error("Error fetching courses:", error);
+        } finally {
+            setLoading(false); // End loading
         }
     };
 
@@ -94,7 +98,11 @@ export const Studentpage = () => {
                 )}
             </div>
 
-            {view === "courses" ? (
+            {loading ? (
+                <div className="flex justify-center items-center h-64">
+                    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+                </div>
+            ) : view === "courses" ? (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {filteredCourses.map((course) => (
                         <Card key={course.id} className="flex flex-col shadow-lg">
