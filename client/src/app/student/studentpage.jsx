@@ -16,7 +16,7 @@ export const Studentpage = () => {
 
     const fetchAllCourses = async () => {
         try {
-            setLoading(true); // Start loading
+            setLoading(true); 
             const response = await fetch("http://localhost:8000/api/v1/courses");
             if (response.ok) {
                 const data = await response.json();
@@ -30,7 +30,7 @@ export const Studentpage = () => {
         } catch (error) {
             console.error("Error fetching courses:", error);
         } finally {
-            setLoading(false); // End loading
+            setLoading(false); 
         }
     };
 
