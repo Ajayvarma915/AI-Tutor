@@ -1,5 +1,8 @@
+const axios = require("axios");
 const prisma = require("../utils/db.config");
-
+const { PassThrough } = require("stream");
+const FormData = require("form-data");
+const fetch = require("node-fetch");
 
 exports.getAllCourses = async (req, res) => {
   try {
@@ -37,13 +40,12 @@ exports.getCourse = async (req, res) => {
           select: {
             id: true,
             name: true,
-            pdffile:true
           },
         },
       },
     });
 
-    if (!course || !course.classes || !course.classes[0].pdffile) {
+    if (!course || !course.classes) {
       return res.status(404).json({
         status: "fail",
         message: "Course or PDF not found",
@@ -58,8 +60,88 @@ exports.getCourse = async (req, res) => {
     });
   } catch (err) {
     res.status(400).json({
-      status: "success",
+      status: "failed",
       message: err,
+    });
+  }
+};
+
+exports.streamPdf = async (req, res) => {
+  try {
+    const courseId = parseInt(req.params.id, 10);
+
+    const course = await prisma.courses.findUnique({
+      where: {
+        id: courseId,
+      },
+      include: {
+        classes: {
+          select: {
+            pdffile: true,
+          },
+        },
+      },
+    });
+
+    if (!course || !course.classes || !course.classes[0].pdffile) {
+      throw Error("PDF file not Found");
+    }
+
+    const pdfBuffer = course.classes[0].pdffile;
+
+    const readableStream = new PassThrough();
+    readableStream.end(pdfBuffer);
+
+    res.writeHead(200, {
+      "Content-Type": "application/pdf",
+      "Content-length": pdfBuffer.length,
+    });
+
+    readableStream.pipe(res);
+  } catch (e) {
+    res.status(400).json({
+      status: "failed",
+      message: e.message,
+    });
+  }
+};
+
+exports.streamAudio = async (req, res) => {
+  try {
+    const courseId = parseInt(req.params.id, 10);
+
+    const course = await prisma.courses.findUnique({
+      where: {
+        id: courseId,
+      },
+      include: {
+        classes: {
+          select: {
+            pdffile: true,
+          },
+        },
+      },
+    });
+
+    if (!course || !course.classes || !course.classes[0].pdffile) {
+      throw Error("PDF file not Found");
+    }
+
+    const pdfBuffer = course.classes[0].pdffile;
+
+    const readableStream = new PassThrough();
+    readableStream.end(pdfBuffer);
+
+    res.writeHead(200, {
+      "Content-Type": "application/pdf",
+      "Content-length": pdfBuffer.length,
+    });
+
+    readableStream.pipe(res);
+  } catch (e) {
+    res.status(400).json({
+      status: "failed",
+      message: e.message,
     });
   }
 };
@@ -91,32 +173,73 @@ exports.addClassDetails = async (req, res) => {
     const pdfBuffer = req.file.buffer;
     const pdfname = req.body.name;
     const courseId = parseInt(req.params.id, 10);
-    const updatedCours = await prisma.Courses.update({
-      where: {
-        id: courseId,
+
+    
+
+    
+
+    // const response = await fetch("http://localhost:9000/generate_mp3/", {
+    //   method: "POST",
+    //   headers: formData.getHeaders(),
+    //   body: formData,
+    // });
+
+    // const data = await response.json();
+    // console.log("Response from FastAPI server:", data);
+
+
+    // const updatedCours = await prisma.Courses.update({
+    //   where: {
+    //     id: courseId,
+    //   },
+    //   data: {
+    //     classes: {
+    //       create: {
+    //         name: pdfname,
+    //         pdffile: pdfBuffer,
+    //         createdAt: new Date(),
+    //       },
+    //     },
+    //   },
+    //   include: {
+    //     classes: true,
+    //   },
+    // });
+
+    const pdf = await prisma.Courses.findUnique({
+      where:{
+        id:courseId
       },
-      data: {
-        classes: {
-          create: {
-            name: pdfname,
-            pdffile: pdfBuffer,
-            createdAt: new Date(),
-          },
-        },
-      },
-      include: {
-        classes: true,
-      },
-    });
+      select:{
+        classes:{
+          pdffile:true
+        }
+      }
+    })
+
+    const formData = new FormData();
+
+    formData.append("file", Buffer.from(pdf.classes[0].pdffile,pdf.classes[0]));
+
+
+    const res = await axios.post(
+      "http://localhost:9000/generate_mp3/",
+      formData,
+      {
+        headers: { ...formData.getHeaders() },
+      }
+    );
+
+    console.log(res.data)
 
     res.status(200).json({
       status: "success",
-      data: updatedCours,
+      // data: updatedCours,
     });
   } catch (err) {
     res.status(400).json({
       status: "failed",
-      message: err,
+      message: err.message,
     });
   }
 };

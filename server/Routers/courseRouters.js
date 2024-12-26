@@ -14,9 +14,12 @@ router
   .get(courseControllers.getCourse)
   .patch(upload.single("pdffile"), courseControllers.addClassDetails);
 
+router.route("/streampdf/:id").get(courseControllers.streamPdf);
+router.route("/streamaudio/:id").get(courseControllers.streamAudio);
+
 router
   .route("/:id/:id")
   .get(courseControllers.getClasses)
-  .patch(upload.single("pdffile"),courseControllers.updateClassPdf);
+  .patch(upload.single("pdffile"), courseControllers.updateClassPdf);
 
 module.exports = router;
