@@ -24,6 +24,7 @@ model User {
   role     Role 
   createdAt DateTime @default(now())
   quizSessions QuizSession[]
+  Exams         StudentExam[]
   @@map("users")
 }
 
@@ -31,6 +32,7 @@ model Classes {
   id        Int      @id @default(autoincrement())
   name      String   
   pdffile   Bytes
+  audiofile Bytes?
   createdAt DateTime @default(now())
   Courses   Courses? @relation(fields: [coursesId], references: [id])
   coursesId Int?
@@ -42,7 +44,55 @@ model Courses {
   name        String
   description String
   classes     Classes[]
+  Exams       Exam[]
 }
+
+model Exam {
+  id          Int       @id @default(autoincrement())
+  courses     Courses   @relation(fields: [coursesId],references: [id])
+  coursesId   Int
+  testType    TestType
+  startTime   DateTime @default(now())
+  endTime     DateTime?
+  questions   TestQuestions[]
+  studentExams StudentExam[]
+}
+
+model TestQuestions{
+  id          Int       @id @default(autoincrement())
+  exam        Exam      @relation(fields:[examId],references:[id])
+  examId      Int
+  question    String
+  options     String[]
+  correctAnswer String?
+}
+
+model TestResponse{
+  id          Int       @id @default(autoincrement())
+  studentExamId   Int
+  questionId  Int
+  answer      String?
+  isAnswered  Boolean @default(false)
+  isCorrect   Boolean  
+
+  studentExam StudentExam      @relation(fields:[studentExamId],references:[id])
+}
+
+model StudentExam {
+  id          Int       @id @default(autoincrement())
+  studentId   Int
+  examId      Int
+  status      QuizStatus @default(IN_PROGRESS)
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  responses   TestResponse[]
+  score       Int?
+
+  exam        Exam      @relation(fields:[examId],references:[id])
+  user        User      @relation(fields:[studentId],references:[id])
+
+}
+
 
 model QuizSession{
   id          Int       @id @default(autoincrement())
@@ -90,4 +140,10 @@ enum QuizStatus{
   IN_PROGRESS
   COMPLETED
   NOT_STARTED
+}
+
+enum TestType{
+  TEST1
+  TEST2
+  FINAL
 }

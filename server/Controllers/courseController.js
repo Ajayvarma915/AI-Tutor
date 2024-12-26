@@ -1,5 +1,6 @@
 const prisma = require("../utils/db.config");
 
+
 exports.getAllCourses = async (req, res) => {
   try {
     const courses = await prisma.Courses.findMany({
@@ -27,7 +28,6 @@ exports.getAllCourses = async (req, res) => {
 exports.getCourse = async (req, res) => {
   try {
     const courseId = req.params.id * 1;
-    console.log(typeof courseId);
     const course = await prisma.Courses.findUnique({
       where: {
         id: courseId,
@@ -37,10 +37,18 @@ exports.getCourse = async (req, res) => {
           select: {
             id: true,
             name: true,
+            pdffile:true
           },
         },
       },
     });
+
+    if (!course || !course.classes || !course.classes[0].pdffile) {
+      return res.status(404).json({
+        status: "fail",
+        message: "Course or PDF not found",
+      });
+    }
 
     res.status(200).json({
       status: "success",
