@@ -67,7 +67,6 @@ export default function StudentCoursePage({ params }) {
                     </CardHeader>
 
                     <CardContent className="p-6 space-y-6">
-                        {/* Classes Section */}
                         <div className="space-y-4">
                             {course.classes.map((classItem, index) => (
                                 <div key={index} className="border rounded-lg p-4 shadow">
@@ -104,7 +103,6 @@ export default function StudentCoursePage({ params }) {
                             ))}
                         </div>
 
-                        {/* Tests Section */}
                         <div className="space-y-4">
                             {["Test 1", "Test 2", "Final Test"].map((test, index) => {
                                 const testKey = test.toLowerCase().replace(" ", "");
