@@ -77,10 +77,11 @@ export default function StudentCoursePage({ params }) {
                                         <div className="flex space-x-4">
                                             <Button
                                                 className="bg-green-500 text-white hover:bg-green-600"
-                                                onClick={() => router.push(classItem.pdfLink)}
+                                                onClick={() => window.open(`http://localhost:8000/api/v1/courses/streampdf/${classItem.id}`, '_blank')}
                                             >
                                                 View PDF
                                             </Button>
+
                                             <Button
                                                 className="bg-yellow-500 text-white hover:bg-yellow-600"
                                                 onClick={() => router.push(classItem.audioLink)}
