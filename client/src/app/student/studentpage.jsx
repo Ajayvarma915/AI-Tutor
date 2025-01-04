@@ -16,7 +16,7 @@ export const Studentpage = () => {
 
     const fetchAllCourses = async () => {
         try {
-            setLoading(true); 
+            setLoading(true);
             const response = await fetch("http://localhost:8000/api/v1/courses");
             if (response.ok) {
                 const data = await response.json();
@@ -30,12 +30,13 @@ export const Studentpage = () => {
         } catch (error) {
             console.error("Error fetching courses:", error);
         } finally {
-            setLoading(false); 
+            setLoading(false);
         }
     };
 
     const fetchTestResults = async () => {
         try {
+            setLoading(true);
             const response = await fetch("http://localhost:8000/api/v1/student/test-results");
             if (response.ok) {
                 const data = await response.json();
@@ -47,6 +48,8 @@ export const Studentpage = () => {
             }
         } catch (error) {
             console.error("Error fetching test results:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -60,10 +63,21 @@ export const Studentpage = () => {
         );
     };
 
+    const handleViewChange = (newView) => {
+        setView(newView);
+        if (newView === "courses" && courses.length === 0) {
+            fetchAllCourses();
+        } else if (newView === "results" && testResults.length === 0) {
+            fetchTestResults();
+        }
+    };
+
     useEffect(() => {
-        fetchAllCourses();
-        fetchTestResults();
-    }, []);
+        // Initially fetch courses only when the page loads
+        if (view === "courses") {
+            fetchAllCourses();
+        }
+    }, []); // Runs only on mount
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -75,14 +89,14 @@ export const Studentpage = () => {
                     <Button
                         variant={view === "courses" ? "solid" : "outline"}
                         className={`px-6 py-2 ${view === "courses" ? "bg-blue-500 text-white" : "bg-gray-100"}`}
-                        onClick={() => setView("courses")}
+                        onClick={() => handleViewChange("courses")}
                     >
                         Courses
                     </Button>
                     <Button
                         variant={view === "results" ? "solid" : "outline"}
                         className={`px-6 py-2 ${view === "results" ? "bg-blue-500 text-white" : "bg-gray-100"}`}
-                        onClick={() => setView("results")}
+                        onClick={() => handleViewChange("results")}
                     >
                         Test Results
                     </Button>

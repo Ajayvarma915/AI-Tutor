@@ -18,6 +18,8 @@ export default function StudentCoursePage({ params }) {
         test2: false,
         final: false,
     });
+    const [audioUrl, setAudioUrl] = useState(null);
+    const [currentAudioId, setCurrentAudioId] = useState(null);
 
     const fetchCourseData = async () => {
         try {
@@ -36,13 +38,62 @@ export default function StudentCoursePage({ params }) {
         }
     };
 
-    useEffect(() => {
-        fetchCourseData();
-    }, []);
+    const handleViewPDF = async (classId) => {
+        try {
+            const response = await fetch(`http://localhost:8000/api/v1/courses/classpdf/${classId}`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.pdf) {
+                    const pdfArray = Object.values(data.pdf);
+                    const pdfBlob = new Blob([new Uint8Array(pdfArray)], { type: "application/pdf" });
+                    const pdfUrl = URL.createObjectURL(pdfBlob);
+                    window.open(pdfUrl, "_blank");
+                } else {
+                    toast.error("PDF data is not available.");
+                }
+            } else {
+                toast.error("Failed to fetch PDF.");
+            }
+        } catch (error) {
+            toast.error("Error fetching PDF.");
+        }
+    };
+
+    const handleAudioFile = async (classId) => {
+        try {
+            const response = await fetch(`http://localhost:8000/api/v1/courses/classaudio/${classId}`);
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Audio API Response:", data); // Debugging log
+
+                if (data.data.newClass.audiofile) {
+                    const audioArray = Object.values(data.data.newClass.audiofile); // Convert object to array
+                    const audioBlob = new Blob([new Uint8Array(audioArray)], { type: "audio/mpeg" });
+                    const audioUrl = URL.createObjectURL(audioBlob); // Create a URL for the audio file
+
+                    setAudioUrl(audioUrl); // Assuming you're using React state
+                    setCurrentAudioId(classId); // Save the current class ID
+                } else {
+                    toast.warn("No audio file available for this class.");
+                }
+            } else {
+                toast.error("Failed to fetch audio file.");
+            }
+        } catch (error) {
+            console.error("Error fetching audio file:", error);
+            toast.error("Error fetching audio file.");
+        }
+    };
+
+
 
     const toggleDropdown = (key) => {
         setDropdowns((prev) => ({ ...prev, [key]: !prev[key] }));
     };
+
+    useEffect(() => {
+        fetchCourseData();
+    }, []);
 
     if (loading) {
         return <Loader />;
@@ -77,16 +128,26 @@ export default function StudentCoursePage({ params }) {
                                         <div className="flex space-x-4">
                                             <Button
                                                 className="bg-green-500 text-white hover:bg-green-600"
-                                                onClick={() => router.push(classItem.pdfLink)}
+                                                onClick={() => handleViewPDF(classItem.id)}
                                             >
                                                 View PDF
                                             </Button>
+
                                             <Button
                                                 className="bg-yellow-500 text-white hover:bg-yellow-600"
-                                                onClick={() => router.push(classItem.audioLink)}
+                                                onClick={() => handleAudioFile(classItem.id)}
                                             >
                                                 Audio File
                                             </Button>
+
+                                            {audioUrl && currentAudioId === classItem.id && (
+                                                <div className="mt-4">
+                                                    <audio controls src={audioUrl} className="w-full">
+                                                        Your browser does not support the audio element.
+                                                    </audio>
+                                                </div>
+                                            )}
+
                                             <Button
                                                 className="bg-blue-500 text-white hover:bg-blue-600"
                                                 onClick={() =>

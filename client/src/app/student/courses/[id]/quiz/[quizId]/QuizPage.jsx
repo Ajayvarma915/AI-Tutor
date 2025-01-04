@@ -17,7 +17,7 @@ const QuizPage = ({ params }) => {
     const { id } = params;
     const [quizData, setQuizData] = useState(null);
     const [answers, setAnswers] = useState({});
-    const [timeLeft, setTimeLeft] = useState(10);
+    const [timeLeft, setTimeLeft] = useState(600);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loading, setLoading] = useState(true);
     const [showDialog, setShowDialog] = useState(false);
