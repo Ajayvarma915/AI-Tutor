@@ -64,15 +64,15 @@ export default function StudentCoursePage({ params }) {
             const response = await fetch(`http://localhost:8000/api/v1/courses/classaudio/${classId}`);
             if (response.ok) {
                 const data = await response.json();
-                console.log("Audio API Response:", data); // Debugging log
+                console.log("Audio API Response:", data); 
 
                 if (data.data.newClass.audiofile) {
-                    const audioArray = Object.values(data.data.newClass.audiofile); // Convert object to array
+                    const audioArray = Object.values(data.data.newClass.audiofile); 
                     const audioBlob = new Blob([new Uint8Array(audioArray)], { type: "audio/mpeg" });
-                    const audioUrl = URL.createObjectURL(audioBlob); // Create a URL for the audio file
-
-                    setAudioUrl(audioUrl); // Assuming you're using React state
-                    setCurrentAudioId(classId); // Save the current class ID
+                    const audioUrl = URL.createObjectURL(audioBlob); 
+                    
+                    setAudioUrl(audioUrl); 
+                    setCurrentAudioId(classId); 
                 } else {
                     toast.warn("No audio file available for this class.");
                 }
