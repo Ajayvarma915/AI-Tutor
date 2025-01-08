@@ -21,6 +21,6 @@ router.route("/pdf/:id").get(classControllers.getPdf);
 router.route("/audio/:id").get(classControllers.getAudio);
 
 // router.route("/streampdf/:id").get(classControllers.streamPdf);
-// router.route("/streamaudio/:id").get(classControllers.streamAudio);
+router.route("/streamaudio/:id").get(classControllers.streamAudio);
 
 module.exports = router;
