@@ -22,7 +22,7 @@ export default function CoursePage({ params }) {
 
     const getCourseName = async () => {
         try {
-            const response = await fetch(`http://localhost:8000/api/v1/courses/${params.id}`);
+            const response = await fetch(`http://localhost:8000/api/v1/courses/${courseId}`);
             if (response.ok) {
                 const data = await response.json();
                 setCourse(data.data.course);
@@ -65,29 +65,26 @@ export default function CoursePage({ params }) {
 
     const handleAddClass = async (e) => {
         e.preventDefault();
-        if (!newClassName || !file) {
+        if (!file || !newClassName.trim()) {
             return toast.error("Please provide a class name and upload a PDF.");
         }
 
         const formData = new FormData();
-        formData.append("pdffile", file);
+        console.log(formData)
         formData.append("name", newClassName);
+        formData.append("courseId", courseId);
 
         try {
-            const response = await fetch(
-                `http://localhost:8000/api/v1/courses/${courseId}`,
-                {
-                    method: "PATCH",
-                    body: formData,
-                }
-            );
-            console.log(response)
+            const response = await fetch(`http://localhost:8000/api/v1/classes/`, {
+                method: "POST",
+                body: formData,
+            });
             if (response.ok) {
                 toast.success("Class added successfully.");
                 setIsAddDialogOpen(false);
                 setFile(null);
-                setNewClassName("");
-                getCourseName(); // Refresh data
+                setNewClassName(""); 
+                getCourseName(); 
             } else {
                 toast.error("Failed to add class.");
             }
@@ -96,8 +93,21 @@ export default function CoursePage({ params }) {
         }
     };
 
-    const handleViewPDF = (pdfName) => {
-        window.open(`http://localhost:8000/uploads/${pdfName}`, "_blank");
+    const handleViewPDF = async (classId) => {
+        try {
+            const response = await fetch(`http://localhost:8000/api/v1/classes/pdf/${classId}`);
+            if (response.ok) {
+                const data = await response.json();
+                const pdfBytes = Object.values(data.pdf); // Convert response object to byte array
+                const pdfBlob = new Blob([new Uint8Array(pdfBytes)], { type: "application/pdf" });
+                const pdfURL = URL.createObjectURL(pdfBlob);
+                window.open(pdfURL, "_blank"); // Open the PDF in a new tab
+            } else {
+                toast.error("Failed to fetch PDF.");
+            }
+        } catch (error) {
+            toast.error("Error fetching PDF.");
+        }
     };
 
     useEffect(() => {
@@ -139,7 +149,7 @@ export default function CoursePage({ params }) {
                                         className="flex items-center space-x-4"
                                     >
                                         <p>{eachClass.name}</p>
-                                        <Button variant="outline" onClick={() => handleViewPDF(eachClass.name)}>
+                                        <Button variant="outline" onClick={() => handleViewPDF(eachClass.id)}>
                                             View PDF
                                         </Button>
                                         <Button
@@ -190,13 +200,22 @@ export default function CoursePage({ params }) {
                                     <DialogTitle>Add New Class</DialogTitle>
                                 </DialogHeader>
                                 <form onSubmit={handleAddClass} className="space-y-4">
-                                    <input
-                                        type="text"
-                                        placeholder="Class Name"
-                                        value={newClassName}
-                                        onChange={(e) => setNewClassName(e.target.value)}
-                                        className="w-full p-2 border rounded"
-                                    />
+                                    <div>
+                                        <label
+                                            htmlFor="className"
+                                            className="block text-sm font-medium text-gray-700"
+                                        >
+                                            Class Name
+                                        </label>
+                                        <input
+                                            id="className"
+                                            type="text"
+                                            value={newClassName}
+                                            onChange={(e) => setNewClassName(e.target.value)}
+                                            placeholder="Enter class name"
+                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
+                                        />
+                                    </div>
                                     <PdfUpload onUpload={(file) => setFile(file)} />
                                     <Button type="submit" className="w-full">
                                         Add Class

@@ -11,6 +11,7 @@ import Loader from "@/components/loader/Loader";
 export default function StudentCoursePage({ params }) {
     const router = useRouter();
     const courseId = params.id;
+
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [dropdowns, setDropdowns] = useState({
@@ -40,7 +41,7 @@ export default function StudentCoursePage({ params }) {
 
     const handleViewPDF = async (classId) => {
         try {
-            const response = await fetch(`http://localhost:8000/api/v1/courses/classpdf/${classId}`);
+            const response = await fetch(`http://localhost:8000/api/v1/classes/pdf/${classId}`);
             if (response.ok) {
                 const data = await response.json();
                 if (data.pdf) {
@@ -61,18 +62,17 @@ export default function StudentCoursePage({ params }) {
 
     const handleAudioFile = async (classId) => {
         try {
-            const response = await fetch(`http://localhost:8000/api/v1/courses/classaudio/${classId}`);
+            const response = await fetch(`http://localhost:8000/api/v1/classes/audio/${classId}`);
             if (response.ok) {
                 const data = await response.json();
-                console.log("Audio API Response:", data); 
-
+                console.log(data);
                 if (data.data.newClass.audiofile) {
-                    const audioArray = Object.values(data.data.newClass.audiofile); 
+                    const audioArray = Object.values(data.data.newClass.audiofile);
                     const audioBlob = new Blob([new Uint8Array(audioArray)], { type: "audio/mpeg" });
-                    const audioUrl = URL.createObjectURL(audioBlob); 
+                    const audioUrl = URL.createObjectURL(audioBlob);
                     
-                    setAudioUrl(audioUrl); 
-                    setCurrentAudioId(classId); 
+                    setAudioUrl(audioUrl);
+                    setCurrentAudioId(classId);
                 } else {
                     toast.warn("No audio file available for this class.");
                 }
@@ -80,12 +80,9 @@ export default function StudentCoursePage({ params }) {
                 toast.error("Failed to fetch audio file.");
             }
         } catch (error) {
-            console.error("Error fetching audio file:", error);
             toast.error("Error fetching audio file.");
         }
     };
-
-
 
     const toggleDropdown = (key) => {
         setDropdowns((prev) => ({ ...prev, [key]: !prev[key] }));
