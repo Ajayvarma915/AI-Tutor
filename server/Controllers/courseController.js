@@ -1,6 +1,5 @@
 const prisma = require("../utils/db.config");
 
-
 exports.getAllCourses = async (req, res) => {
   try {
     const courses = await prisma.Courses.findMany({
@@ -48,6 +47,29 @@ exports.getCourse = async (req, res) => {
         message: "Course or PDF not found",
       });
     }
+    
+    const classIds = course.classes.map((item) => item.id);
+
+    const listOfClasses = await prisma.classes.findMany({
+      where: {
+        id: {
+          in: classIds,
+        },
+        AND: {
+          audiofile: null,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    const Ids = listOfClasses.map((item)=>item.id)
+
+    course.classes.forEach((item) => {
+      console.log(item)
+      Ids.find((e)=>e==item.id) ? (item.audio = false) : (item.audio = true);
+    });
 
     res.status(200).json({
       status: "success",
@@ -58,7 +80,7 @@ exports.getCourse = async (req, res) => {
   } catch (err) {
     res.status(400).json({
       status: "failed",
-      message: err,
+      message: err.message,
     });
   }
 };
