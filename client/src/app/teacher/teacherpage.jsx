@@ -84,7 +84,10 @@ const TeacherDashboard = () => {
             );
 
             if (response.ok) {
-                toast.success("Course deleted successfully!");
+                const data = await response.json();
+                toast.success(
+                    `Course "${data.deletedCourse.name}" deleted successfully!`
+                );
                 setDeleteCourseId(null);
                 getAllCourses();
             } else {
@@ -109,7 +112,7 @@ const TeacherDashboard = () => {
 
     if (!loader) {
         return (
-            <Loader /> // Loader component for the loading state
+            <Loader /> 
         );
     }
 
@@ -146,7 +149,10 @@ const TeacherDashboard = () => {
                                     id="courseDescription"
                                     value={newCourse.description}
                                     onChange={(e) =>
-                                        setNewCourse({ ...newCourse, description: e.target.value })
+                                        setNewCourse({
+                                            ...newCourse,
+                                            description: e.target.value,
+                                        })
                                     }
                                     required
                                 />
