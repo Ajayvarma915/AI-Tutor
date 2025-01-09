@@ -1,6 +1,7 @@
 const prisma = require("../utils/db.config");
 const FormData = require("form-data");
 const axios = require("axios");
+const { PassThrough } = require("stream");
 
 exports.createClass = async (req, res) => {
   try {
@@ -295,39 +296,39 @@ exports.createAudio = async (req, res) => {
 //   }
 // };
 
-// exports.streamAudio = async (req, res) => {
-//   try {
-//     const classesId = parseInt(req.params.id, 10);
+exports.streamAudio = async (req, res) => {
+  try {
+    const classesId = parseInt(req.params.id, 10);
 
-//     const course = await prisma.classes.findUnique({
-//       where: {
-//         id: classesId,
-//       },
-//       select: {
-//         audiofile: true,
-//         name: true,
-//       },
-//     });
+    const course = await prisma.classes.findUnique({
+      where: {
+        id: classesId,
+      },
+      select: {
+        audiofile: true,
+        name: true,
+      },
+    });
 
-//     if (!course || !course.audiofile) {
-//       throw Error("PDF file not Found");
-//     }
+    if (!course || !course.audiofile) {
+      throw Error("PDF file not Found");
+    }
 
-//     const pdfBuffer = course.audiofile;
+    const pdfBuffer = course.audiofile;
 
-//     const readableStream = new PassThrough();
-//     readableStream.end(pdfBuffer);
+    const readableStream = new PassThrough();
+    readableStream.end(pdfBuffer);
 
-//     res.writeHead(200, {
-//       "Content-Type": "application/pdf",
-//       "Content-length": pdfBuffer.length,
-//     });
+    res.writeHead(200, {
+      "Content-Type": "audio/mpeg",
+      "Content-length": pdfBuffer.length,
+    });
 
-//     readableStream.pipe(res);
-//   } catch (e) {
-//     res.status(400).json({
-//       status: "failed",
-//       message: e.message,
-//     });
-//   }
-// };
+    readableStream.pipe(res);
+  } catch (e) {
+    res.status(400).json({
+      status: "failed",
+      message: e.message,
+    });
+  }
+};
