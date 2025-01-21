@@ -21,6 +21,10 @@ export default function StudentCoursePage({ params }) {
     });
     const [audioUrl, setAudioUrl] = useState(null);
     const [currentAudioId, setCurrentAudioId] = useState(null);
+    const [audio, setAudio] = useState(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [volume, setVolume] = useState(1);
 
     const fetchCourseData = async () => {
         try {
@@ -62,30 +66,80 @@ export default function StudentCoursePage({ params }) {
 
     const handleAudioFile = async (classId) => {
         try {
-            const response = await fetch(`http://localhost:8000/api/v1/classes/audio/${classId}`);
+            const response = await fetch(`http://localhost:8000/api/v1/classes/streamaudio/${classId}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
             if (response.ok) {
-                const data = await response.json();
-                console.log(data);
-                if (data.data.newClass.audiofile) {
-                    const audioArray = Object.values(data.data.newClass.audiofile);
-                    const audioBlob = new Blob([new Uint8Array(audioArray)], { type: "audio/mpeg" });
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    
-                    setAudioUrl(audioUrl);
-                    setCurrentAudioId(classId);
+                const contentType = response.headers.get('Content-Type');
+
+                if (contentType && contentType.includes('audio/mpeg')) {
+                    const audioBlob = await response.blob();
+                    if (audioBlob.size > 0) {
+                        const audioUrl = URL.createObjectURL(new Blob([audioBlob], { type: "audio/mpga" }));
+                        setAudioUrl(audioUrl);
+                        setCurrentAudioId(classId);
+
+                        // Create a new audio element
+                        const newAudio = new Audio(audioUrl);
+                        newAudio.volume = volume;
+
+                        // Update the audio state
+                        setAudio(newAudio);
+
+                        // Update progress as audio plays
+                        newAudio.ontimeupdate = () => {
+                            const progressPercentage = (newAudio.currentTime / newAudio.duration) * 100;
+                            setProgress(progressPercentage);
+                        };
+
+                        // Play the audio automatically
+                        newAudio.play().catch(() => {
+                            toast.warn("Audio autoplay failed. Please click the play button manually.");
+                        });
+                    } else {
+                        toast.warn("The audio file is empty or invalid.");
+                    }
                 } else {
-                    toast.warn("No audio file available for this class.");
+                    toast.error("Unexpected content type received.");
                 }
             } else {
-                toast.error("Failed to fetch audio file.");
+                toast.error("Failed to fetch the audio file.");
             }
         } catch (error) {
-            toast.error("Error fetching audio file.");
+            toast.error("An error occurred while handling the audio file.");
+            console.error("Error fetching audio:", error);
         }
     };
 
     const toggleDropdown = (key) => {
         setDropdowns((prev) => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    const handlePlayPause = () => {
+        if (audio) {
+            if (isPlaying) {
+                audio.pause();
+            } else {
+                audio.play();
+            }
+            setIsPlaying(!isPlaying);
+        }
+    };
+
+    const handleProgressChange = (e) => {
+        const newTime = (e.target.value / 100) * audio.duration;
+        audio.currentTime = newTime;
+        setProgress(e.target.value);
+    };
+
+    const handleVolumeChange = (e) => {
+        const newVolume = e.target.value / 100;
+        audio.volume = newVolume;
+        setVolume(newVolume);
     };
 
     useEffect(() => {
@@ -138,10 +192,34 @@ export default function StudentCoursePage({ params }) {
                                             </Button>
 
                                             {audioUrl && currentAudioId === classItem.id && (
-                                                <div className="mt-4">
-                                                    <audio controls src={audioUrl} className="w-full">
-                                                        Your browser does not support the audio element.
-                                                    </audio>
+                                                <div className="mt-4 border p-4 rounded-lg bg-gray-100">
+                                                    <div className="flex justify-between items-center">
+                                                        <Button
+                                                            className="bg-blue-500 text-white"
+                                                            onClick={handlePlayPause}
+                                                        >
+                                                            {isPlaying ? "Pause" : "Play"}
+                                                        </Button>
+
+                                                        <div className="w-2/3 mx-2">
+                                                            <input
+                                                                type="range"
+                                                                value={progress}
+                                                                onChange={handleProgressChange}
+                                                                className="w-full"
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="mt-2">
+                                                        <input
+                                                            type="range"
+                                                            value={volume * 100}
+                                                            onChange={handleVolumeChange}
+                                                            className="w-full"
+                                                        />
+                                                        <p className="text-xs text-gray-600">Volume</p>
+                                                    </div>
                                                 </div>
                                             )}
 
