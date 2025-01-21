@@ -11,9 +11,10 @@ router
 router
   .route("/:id")
   .get(classControllers.getClass)
-  .patch(upload.single("pdffile"), classControllers.updateClass);
+  .patch(upload.single("pdffile"), classControllers.updateClass)
+  .delete(classControllers.deleteClass);
 
-  router
+router
   .route("/generateaudio/:id")
   .post(upload.single("pdffile"), classControllers.createAudio);
 

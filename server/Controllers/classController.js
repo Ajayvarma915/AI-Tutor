@@ -3,71 +3,6 @@ const FormData = require("form-data");
 const axios = require("axios");
 const { PassThrough } = require("stream");
 
-exports.createClass = async (req, res) => {
-  try {
-    const pdfBuffer = req.file.buffer;
-    const pdfname = req.file.originalname;
-    const courseId = parseInt(req.body.courseId);
-
-    const updatedCours = await prisma.classes.create({
-      data: {
-        coursesId: courseId,
-        name: pdfname,
-        pdffile: pdfBuffer,
-        createdAt: new Date(),
-      },
-    });
-
-    const pdf = await prisma.classes.findUnique({
-      where: {
-        id: updatedCours.id,
-      },
-      select: {
-        pdffile: true,
-        name: true,
-      },
-    });
-
-    if (!pdf || !pdf.pdffile) {
-      return res.status(404).json({
-        status: "failed",
-        message: "PDF file not found for the given class ID.",
-      });
-    }
-
-    const formData = new FormData();
-
-    formData.append("file", Buffer.from(pdf.pdffile), pdf.name);
-
-    const resp = await axios.post(
-      "http://localhost:9000/generate_mp3/",
-      formData,
-      {
-        headers: { ...formData.getHeaders() },
-      }
-    );
-
-    const audiofileupload = await prisma.classes.update({
-      where: {
-        id: updatedCours.id,
-      },
-      data: {
-        audiofile: Buffer.from(resp.data.audiofile, "base64"),
-      },
-    });
-
-    res.status(200).json({
-      status: "success",
-      data: updatedCours,
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "failed",
-      message: err.message,
-    });
-  }
-};
-
 exports.getAllClasses = async (req, res) => {
   try {
     const courses = await prisma.classes.findMany({
@@ -107,7 +42,7 @@ exports.getClass = async (req, res) => {
     // To check no of audio file exists
     // const newClass = await prisma.classes.aggregate({
     //   _count: {
-    //     _all:true
+    //     _all: true,
     //   },
     //   where: {
     //     audiofile: null,
@@ -128,10 +63,80 @@ exports.getClass = async (req, res) => {
   }
 };
 
+exports.createClass = async (req, res) => {
+  try {
+    const pdfBuffer = req.file.buffer;
+    const pdfname = req.file.originalname;
+    const courseId = parseInt(req.body.courseId);
+
+    const updatedCours = await prisma.classes.create({
+      data: {
+        coursesId: courseId,
+        name: pdfname,
+        pdffile: pdfBuffer,
+        createdAt: new Date(),
+      },
+    });
+
+    // const pdf = await prisma.classes.findUnique({
+    //   where: {
+    //     id: updatedCours.id,
+    //   },
+    //   select: {
+    //     pdffile: true,
+    //     name: true,
+    //   },
+    // });
+
+    // if (!pdf || !pdf.pdffile) {
+    //   return res.status(404).json({
+    //     status: "failed",
+    //     message: "PDF file not found for the given class ID.",
+    //   });
+    // }
+
+    // const formData = new FormData();
+
+    // formData.append("file", Buffer.from(pdf.pdffile), pdf.name);
+
+    // const resp = await axios.post(
+    //   "http://localhost:9000/generate_mp3/",
+    //   formData,
+    //   {
+    //     headers: { ...formData.getHeaders() },
+    //   }
+    // );
+
+    // const audiofileupload = await prisma.classes.update({
+    //   where: {
+    //     id: updatedCours.id,
+    //   },
+    //   data: {
+    //     audiofile: Buffer.from(resp.data.audiofile, "base64"),
+    //   },
+    // });
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        id: updatedCours.id,
+        name: updatedCours.name,
+        createdAt: updatedCours.createdAt,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: "failed",
+      message: err.message,
+    });
+  }
+};
+
+
 exports.updateClass = async (req, res) => {
   try {
     const pdfBuffer = req.file.buffer;
-    const pdfname = req.body.name;
+    const pdfname = req.file.originalname;
     const classId = parseInt(req.params.id, 10);
     const updatedCours = await prisma.classes.update({
       where: {
@@ -141,17 +146,43 @@ exports.updateClass = async (req, res) => {
         name: pdfname,
         pdffile: pdfBuffer,
         createdAt: new Date(),
+        audiofile:null
       },
     });
 
     res.status(200).json({
       status: "success",
-      data: updatedCours,
+      data: {
+        id:updatedCours.id,
+        name:updatedCours.name,
+      },
     });
   } catch (err) {
     res.status(400).json({
       status: "failed",
       message: err,
+    });
+  }
+};
+
+exports.deleteClass = async (req, res) => {
+  try {
+    const classId = parseInt(req.params.id);
+    const deletedClass = await prisma.classes.delete({
+      where: {
+        id: classId,
+      },
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "class successfully deleted",
+      name: deletedClass.name,
+    });
+  } catch (e) {
+    res.status(400).json({
+      status: "failed",
+      message: e.message,
     });
   }
 };
