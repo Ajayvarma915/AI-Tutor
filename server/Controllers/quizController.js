@@ -179,3 +179,41 @@ exports.answerSubmission = async (req, res) => {
     });
   }
 };
+
+exports.getAllQuizsReport = async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id, 10);
+    const results = await prisma.courses.findMany({
+      select: {
+        name: true,
+        classes: {
+          select: {
+            name: true,
+            quizSessions: {
+              where: {
+                userId,
+              },
+              select: {
+                score: true,
+                startedAt: true,
+                completedAt: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        results,
+      },
+    });
+  } catch (e) {
+    res.status(400).json({
+      status: "failed",
+      message: e.message,
+    });
+  }
+};
